@@ -75,9 +75,10 @@ function clearSelectionHints(){
 //sart listening for keypress, and iterate over selections
 
 
-$(document).keypress(function(event){
+$(document).keyup(function(event){
 
 	let keycode = (event.keyCode ? event.keyCode : event.which);
+	console.log(keycode);
 
 	//switch true allows us to do comarisons to keycode instead of checking equality
 	switch(true){
@@ -88,7 +89,7 @@ $(document).keypress(function(event){
 			}
 		break;
 
-		//keycode = letter enter
+		//keycode = enter
 		case (keycode == 13):
 			if(displayHints){
 				selectedIndex = parseInt(index, 10);
@@ -103,7 +104,7 @@ $(document).keypress(function(event){
 		break;
 
 		//keycode = g
-		case (keycode == 103):
+		case (event.ctrlKey && ( event.which === 32 )):
 
 			if(textNodeArr.length == 0 || scrollWindowTop != $(document).scrollTop()){
 
