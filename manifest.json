@@ -1,0 +1,32 @@
+{
+
+  "manifest_version": 2,
+  "name": "smart_caret",
+  "version": "1.0",
+
+  "description": "travels the page by selection",
+
+  "icons": {
+    "48": "icons/border-48.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["jquery.js","smart_caret.js"]
+    }
+  ],
+
+	"options_ui": {
+    "page": "options.html"
+  },
+
+  "permissions": ["storage"],
+
+  "applications": {
+    "gecko": {
+      "id": "addon@example.com"
+    }
+  }
+
+}
