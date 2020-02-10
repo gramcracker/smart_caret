@@ -9,6 +9,7 @@ let index = "";
 let selectedIndex = 0;
 let scrollWindowTop = 0;
 let scrollWindowBottom = $( window ).height() + scrollWindowTop;
+let selectedNode;
 $(document.body).append('<div id="selectionHintMarkerContainer"></div>');
 
 
@@ -67,6 +68,7 @@ function makeSelection( node ){
 function clearSelectionHints(){
 	selectedIndex = 0;
 	textNodeArr = [];
+	selectedNode = undefined;
 	$("#selectionHintMarkerContainer").empty();
 }
 
@@ -86,7 +88,7 @@ $(document).keypress(function(event){
 			}
 		break;
 
-		//keycode = letter g
+		//keycode = letter enter
 		case (keycode == 13):
 			if(displayHints){
 				selectedIndex = parseInt(index, 10);
@@ -95,11 +97,12 @@ $(document).keypress(function(event){
 				index = "";
 
 			}
-			makeSelection(textNodeArr[selectedIndex]);
+			selectedNode = textNodeArr[selectedIndex];
+			makeSelection(selectedNode);
 			selectedIndex++;
 		break;
 
-		//keycode = enter
+		//keycode = g
 		case (keycode == 103):
 
 			if(textNodeArr.length == 0 || scrollWindowTop != $(document).scrollTop()){
@@ -130,7 +133,11 @@ $(document).keypress(function(event){
 
 		//keycode = plus sign
 		case (keycode == 43):
-			makeSelection(textNodeArr[selectedIndex].parentElement);
+			if(!selectedNode) {
+				selectedNode = textNodeArr[selectedIndex];
+			}
+			selectedNode = selectedNode.parentElement;
+			makeSelection(selectedNode);
 			
 		break;
 
