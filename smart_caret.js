@@ -51,18 +51,18 @@ function getTextNodes(from, to){
 	})
 }
 
+//set area for marker hints to be drawn
 function setViewArea(){
 	scrollWindowTop = $(document).scrollTop();
 	scrollWindowBottom = $( window ).height() + scrollWindowTop;
 }
 
+
 function makeSelection( node ){
-	console.log(node);
 	selection = window.getSelection();
 	selection.removeAllRanges();
 	range.selectNodeContents(node);
 	selection.addRange(range);
-	console.log(node.textContent);
 }
 
 function clearSelectionHints(){
@@ -72,73 +72,129 @@ function clearSelectionHints(){
 	$("#selectionHintMarkerContainer").empty();
 }
 
-//sart listening for keypress, and iterate over selections
+// function stealFocus(){
+// 	$("#selectionHintMarkerContainer").focus();
+// 	console.log("stole focus");
+// 	$(document).keyup(function(event)){
+// 		if(event.keycode >= 48 && event.keycode <= 57){
+// 			console.log(event.keycode - 48);
+// 		}
+// 	}
+
+// }
+
+
+function markerMode() {
+
+	if(textNodeArr.length == 0 || scrollWindowTop != $(document).scrollTop()){
+
+		//clear out old hint markers
+		clearSelectionHints();
+
+		//get area for visible space to place hints
+		setViewArea();
+		
+		//fill textNodeArr with new nodes
+		getTextNodes();
+
+		//make new hint markers to reflect contents of textNodeArr
+		makeSelectionHints();
+	}
+
+	//toggle displaying hint markers
+	if(displayHints == false){
+		$(".selectionHintMarker").css("display", "inline");
+		displayHints = true;
+	}else{
+		$(".selectionHintMarker").css("display", "none");
+		displayHints = false;
+	}
+
+}
+
+function enterSelection(){
+	//if hints are showing, set selectedIndex to index, and hide hints then reset index
+	if(displayHints){
+		selectedIndex = parseInt(index, 10);
+		$(".selectionHintMarker").css("display", "none");
+		displayHints = false;
+		index = "";
+	}
+	//select node at selected index
+	selectedNode = textNodeArr[selectedIndex];
+	makeSelection(selectedNode);
+	//iterate for next call
+	selectedIndex++;
+
+}
+
+function expandSelection(){
+
+	console.log("+");
+	if(!selectedNode) {
+		selectedNode = textNodeArr[selectedIndex];
+	}
+	selectedNode = selectedNode.parentElement;
+	makeSelection(selectedNode);
+
+}
+
+function inputNumeric(keycode) {
+	if(displayHints){
+		let n = keycode - 48;
+		index = index + n;
+		console.log(index);
+	}
+}
+
+//start listening for keypress, and iterate over selections
+
+
+// if(!displayHints){
+
+// 	$(document).keyup(function(event){
+
+// 	});
+
+// }else{
+
+// }
+
+
 
 
 $(document).keyup(function(event){
 
 	let keycode = (event.keyCode ? event.keyCode : event.which);
+	
 	console.log(keycode);
-
 	//switch true allows us to do comarisons to keycode instead of checking equality
 	switch(true){
+		//keycode is numeric
 		case (keycode >= 48 && keycode <= 57):
-			if(displayHints){
-				let n = keycode - 48;
-				index = index + n;
-			}
+
+			inputNumeric(keycode);
+
 		break;
 
 		//keycode = enter
 		case (keycode == 13):
-			if(displayHints){
-				selectedIndex = parseInt(index, 10);
-				$(".selectionHintMarker").css("display", "none");
-				displayHints = false;
-				index = "";
 
-			}
-			selectedNode = textNodeArr[selectedIndex];
-			makeSelection(selectedNode);
-			selectedIndex++;
+			enterSelection();
+
 		break;
 
-		//keycode = g
+		//keycode = ctrl + space
 		case (event.ctrlKey && ( event.which === 32 )):
 
-			if(textNodeArr.length == 0 || scrollWindowTop != $(document).scrollTop()){
-
-				//clear out old hint markers
-				clearSelectionHints();
-
-				//get area for visible space to place hints
-				setViewArea();
-				
-				//fill textNodeArr with new nodes
-				getTextNodes();
-
-				//make new hint markers to reflect contents of textNodeArr
-				makeSelectionHints();
-			}
-
-			//toggle displaying hint markers
-			if(displayHints == false){
-				$(".selectionHintMarker").css("display", "inline");
-				displayHints = true;
-			}else{
-				$(".selectionHintMarker").css("display", "none");
-				displayHints = false;
-			}
+			markerMode();
 		
 		break;
 
-		//keycode = plus sign
-		case (keycode == 43):
-			if(!selectedNode) {
-				selectedNode = textNodeArr[selectedIndex];
-			}
-			selectedNode = selectedNode.parentElement;
-			makeSelection(selectedNode);
+		//keycode = equals sign
+		case (keycode == 61 ):
+			
+			expandSelection();
 			
 		break;
 
