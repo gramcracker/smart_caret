@@ -3,6 +3,8 @@
 
 
 let textNodeArr = [];
+let hintMap = {};
+let alphabet = "abcdefghijklmnopqrstuvwxyz".split('');
 let range = document.createRange();
 let displayHints = false;
 let index = "";
@@ -11,29 +13,49 @@ let scrollWindowTop = 0;
 let scrollWindowBottom = $( window ).height() + scrollWindowTop;
 let selectedNode;
 $(document.body).append('<div id="selectionHintMarkerContainer"></div>');
-
+let markerClassName = "selectionHintMarker";
+let markerContainer = $("#selectionHintMarkerContainer");
 
 function makeSelectionHints(){
 	console.log("making selecions");
-	let i = 0;
+	let i = 0,
+	j = 0;
+
 	let r = document.createRange();
 	textNodeArr.forEach(function(d){
 		r.selectNodeContents(d);
 		let rects = r.getClientRects();
 		if (rects.length > 0) {
 			if(rects[0].top >= scrollWindowTop && rects[0].top <= scrollWindowBottom){
-				selectionHint(rects[0].left, rects[0].top, i);
+				let hint = newHint(j);
+				hintMap[hint] = i;
+				selectionHint(rects[0].left, rects[0].top, hint);
+				j++;
 			}
+
 		}
 		i++;
 	});
 }
 
-function selectionHint(x, y, n) {
-	let d = $("#selectionHintMarkerContainer");
-	d.append('<div class="selectionHintMarker" style=" display: none; position: absolute; background: black; color: white; box-shadow: 5px 5px 3px #888888; font-size: 12px; border-radius: 2px; left: '+x+'px; top: '+y+'px; z-index:1000">'+n+'</div>');
+function selectionHint(x, y, hint) {
+	markerContainer.append('<div class="'+markerClassName+'" id="'+hint+'" style="left: '+x+'px; top: '+y+'px;">'+hint+'</div>');
 
 }
+
+//produces base 26 number 
+	function newHint(j){
+			 	let n = j;
+			 	let digits = [];
+			 	n += 1;
+				while (n > 0){
+					digits.push(alphabet[((n-1) % 26)]);
+					n  = Math.floor(n/26);
+					
+				}
+
+			 return digits.join("");
+	}
 
 //find all nodes with text and append them to nodeArr.
 function getTextNodes(from, to){
@@ -69,7 +91,7 @@ function clearSelectionHints(){
 	selectedIndex = 0;
 	textNodeArr = [];
 	selectedNode = undefined;
-	$("#selectionHintMarkerContainer").empty();
+	markerContainer.empty();
 }
 
 // function stealFocus(){
@@ -103,10 +125,10 @@ function markerMode() {
 
 	//toggle displaying hint markers
 	if(displayHints == false){
-		$(".selectionHintMarker").css("display", "inline");
+		$("."+markerClassName).css("display", "inline");
 		displayHints = true;
 	}else{
-		$(".selectionHintMarker").css("display", "none");
+		$("."+markerClassName).css("display", "none");
 		displayHints = false;
 	}
 
@@ -115,8 +137,8 @@ function markerMode() {
 function enterSelection(){
 	//if hints are showing, set selectedIndex to index, and hide hints then reset index
 	if(displayHints){
-		selectedIndex = parseInt(index, 10);
-		$(".selectionHintMarker").css("display", "none");
+		selectedIndex = hintMap[index];
+		$("."+markerClassName).css("display", "none");
 		displayHints = false;
 		index = "";
 	}
@@ -139,12 +161,18 @@ function expandSelection(){
 
 }
 
-function inputNumeric(keycode) {
+function inputAlpha(keycode) {
 	if(displayHints){
-		let n = keycode - 48;
-		index = index + n;
+
+		index = index + String.fromCharCode(keycode).toLowerCase();
+		//show only hints that match input
+		$("."+markerClassName).not('div[id ^= "'+index+'"]').css("display", "none");
 		console.log(index);
 	}
+}
+
+function backspace() {
+	input = input.substring(0, str.length - 1);
 }
 
 //start listening for keypress, and iterate over selections
@@ -171,9 +199,9 @@ $(document).keyup(function(event){
 	//switch true allows us to do comarisons to keycode instead of checking equality
 	switch(true){
 		//keycode is numeric
-		case (keycode >= 48 && keycode <= 57):
+		case (keycode >= 65 && keycode <= 90):
 
-			inputNumeric(keycode);
+			inputAlpha(keycode);
 
 		break;
 
